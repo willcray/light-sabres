@@ -38,6 +38,50 @@ int main(void) {
 	DCOCTL = CALDCO_16MHZ;  			// |Set clock speed to 16 MHz|
 	BCSCTL1 = CALBC1_16MHZ;  			// |                         |
 
+	// setup Timer A
+	// SMCLK clock
+	// divided by 8 (TASSEL_2)
+	// in up mode (MC_1)
+	// and start by clearing the timer
+	TACTL = TASSEL_2 | ID_3 | MC_1 | TACLR;
+
+	// setup value for comparison (timer in up mode counts until TACCR0 and then resets)
+	// 1 MHz / 8 = 125 kHz --> 260.4166667 ticks for 480 Hz
+	// From MSP User Guide: The number of timer counts in the period is TACCR0+1
+	TACCR0 = 259;
+
+	// enable interrupt on capture-compare control register 0
+	TACCTL0 |= CCIE;	// "All CCIFG flags request an interrupt
+						// when their corresponding CCIE bit and
+						// the GIE bit are set." - UserGuide
+
+	// Set ADC to measure input channel 7, aka pin 1.7
+	// Also set ADC to measure at 1/4 the normal rate
+	ADC10CTL1 = INCH_7 + ADC10DIV_3;
+
+	// Set ADC reference to VREF+, aka pin 1.4 on MSP430G2553
+	// Also set sample and hold time to 64 x ADC10CLKs
+	// Also set Reference generator to ON
+	// Also set ADC10 to ON
+	ADC10CTL0 = SREF_1 + ADC10SHT_3 + REF2_5V + REFON + ADC10ON;
+
+	__delay_cycles(1000); // wait for ADC Ref to settle
+
+	// Set ADC to enable conversion
+	// Also set ADC to start converting
+	ADC10CTL0 |= ENC + ADC10SC;
+	calibrateValue = ADC10MEM;
+
+	// calibrate indices of samples
+	int i;
+	for (i = 0; i < NUM_SAMPLES; i++) {
+		samples[i] = calibrateValue;
+	}
+	average = calibrateValue;
+
+	// right before entering main loop, Global Interrupt Enable
+	_BIS_SR(GIE);
+
 	rowToLight = 0;
 
 	// begin main loop
@@ -215,4 +259,36 @@ void initPins(void) {
 
 	// Enable Analog input for ADC on P1.6
 	ADC10AE0 |= ANALOG_IN_P1;
+}
+
+// Timer A interrupt service routine
+#pragma vector = TIMER0_A0_VECTOR
+__interrupt void TimerA0_routine(void) {
+
+	// this is run every 1/480Hz when Timer A hits comparison value
+
+	// red LED on
+	P1OUT |= BIT0;
+
+	// sampling and conversion start
+	ADC10CTL0 |= ENC + ADC10SC;
+
+	// keep track of the value we're about to overwrite
+	oldestReading = samples[index];
+
+	// sample temperature sensor
+	// store this sample in the oldest slot in the circular array 'samples'
+	samples[index] = ADC10MEM;
+
+	// calculate average of the samples in the sampling window
+	filter();
+
+	// update index "pointer" if it tries to roll off the end
+	// of the circular array
+	index = index + 1;
+	if (index == NUM_SAMPLES)
+		index = 0; // this is more efficient than modulus
+
+	// red LED off
+	P1OUT &= ~BIT0;
 }
