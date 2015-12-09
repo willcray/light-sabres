@@ -25,7 +25,7 @@
 #define ROW_5_P2 BIT4 // P2.4
 #define UNUSED_P2 BIT5 // P2.5
 
-volatile int rowToLight;
+volatile int rowsToLight;
 
 // begin function definitions (we can move these to different file later)
 void initPins(void);
@@ -82,7 +82,9 @@ int main(void) {
 	// right before entering main loop, Global Interrupt Enable
 	_BIS_SR(GIE);
 
-	rowToLight = 0;
+	rowsToLight = 0;
+
+	initPins();
 
 	// begin main loop
 	while (1) {
@@ -92,7 +94,7 @@ int main(void) {
 }
 
 void turnOnRows() {
-	if (/*conditions for no rows*/) {
+	if (rowsToLight == 0) {
 		P2OUT &= ~ROW_0_P2;
 		P1OUT &= ~ROW_1_P1;
 		P2OUT &= ~ROW_2_P2;
@@ -103,7 +105,7 @@ void turnOnRows() {
 		P1OUT &= ~ROW_7_P1;
 		P1OUT &= ~ROW_8_P1;
 		P2OUT &= ~ROW_9_P2;
-	} else if (/*conditions for first row only*/) {
+	} else if (rowsToLight == 1) {
 		P2OUT |= ROW_0_P2;
 		P1OUT &= ~ROW_1_P1;
 		P2OUT &= ~ROW_2_P2;
@@ -114,7 +116,7 @@ void turnOnRows() {
 		P1OUT &= ~ROW_7_P1;
 		P1OUT &= ~ROW_8_P1;
 		P2OUT &= ~ROW_9_P2;
-	} else if (/*conditions for first 2 rows*/) {
+	} else if (rowsToLight == 2) {
 		P2OUT |= ROW_0_P2;
 		P1OUT |= ROW_1_P1;
 		P2OUT &= ~ROW_2_P2;
@@ -125,7 +127,7 @@ void turnOnRows() {
 		P1OUT &= ~ROW_7_P1;
 		P1OUT &= ~ROW_8_P1;
 		P2OUT &= ~ROW_9_P2;
-	} else if (/*conditions for first 3 rows*/) {
+	} else if (rowsToLight == 3) {
 		P2OUT |= ROW_0_P2;
 		P1OUT |= ROW_1_P1;
 		P2OUT |= ROW_2_P2;
@@ -136,7 +138,7 @@ void turnOnRows() {
 		P1OUT &= ~ROW_7_P1;
 		P1OUT &= ~ROW_8_P1;
 		P2OUT &= ~ROW_9_P2;
-	} else if (/*conditions for first 4 rows*/) {
+	} else if (rowsToLight == 4) {
 		P2OUT |= ROW_0_P2;
 		P1OUT |= ROW_1_P1;
 		P2OUT |= ROW_2_P2;
@@ -147,7 +149,7 @@ void turnOnRows() {
 		P1OUT &= ~ROW_7_P1;
 		P1OUT &= ~ROW_8_P1;
 		P2OUT &= ~ROW_9_P2;
-	} else if (/*conditions for first 5 rows*/) {
+	} else if (rowsToLight == 5) {
 		P2OUT |= ROW_0_P2;
 		P1OUT |= ROW_1_P1;
 		P2OUT |= ROW_2_P2;
@@ -158,7 +160,7 @@ void turnOnRows() {
 		P1OUT &= ~ROW_7_P1;
 		P1OUT &= ~ROW_8_P1;
 		P2OUT &= ~ROW_9_P2;
-	} else if (/*conditions for first 6 rows*/) {
+	} else if (rowsToLight == 6) {
 		P2OUT |= ROW_0_P2;
 		P1OUT |= ROW_1_P1;
 		P2OUT |= ROW_2_P2;
@@ -169,7 +171,7 @@ void turnOnRows() {
 		P1OUT &= ~ROW_7_P1;
 		P1OUT &= ~ROW_8_P1;
 		P2OUT &= ~ROW_9_P2;
-	} else if (/*conditions for first 7 rows*/) {
+	} else if (rowsToLight == 7) {
 		P2OUT |= ROW_0_P2;
 		P1OUT |= ROW_1_P1;
 		P2OUT |= ROW_2_P2;
@@ -180,7 +182,7 @@ void turnOnRows() {
 		P1OUT &= ~ROW_7_P1;
 		P1OUT &= ~ROW_8_P1;
 		P2OUT &= ~ROW_9_P2;
-	} else if (/*conditions for first 8 rows*/) {
+	} else if (rowsToLight == 8) {
 		P2OUT |= ROW_0_P2;
 		P1OUT |= ROW_1_P1;
 		P2OUT |= ROW_2_P2;
@@ -191,7 +193,7 @@ void turnOnRows() {
 		P1OUT |= ROW_7_P1;
 		P1OUT &= ~ROW_8_P1;
 		P2OUT &= ~ROW_9_P2;
-	} else if (/*conditions for first 9 rows*/) {
+	} else if (rowsToLight == 9) {
 		P2OUT |= ROW_0_P2;
 		P1OUT |= ROW_1_P1;
 		P2OUT |= ROW_2_P2;
@@ -202,7 +204,7 @@ void turnOnRows() {
 		P1OUT |= ROW_7_P1;
 		P1OUT |= ROW_8_P1;
 		P2OUT &= ~ROW_9_P2;
-	} else if (/*conditions for all 10 rows*/) {
+	} else if (rowsToLight == 10) {
 		P2OUT |= ROW_0_P2;
 		P1OUT |= ROW_1_P1;
 		P2OUT |= ROW_2_P2;
@@ -214,7 +216,7 @@ void turnOnRows() {
 		P1OUT |= ROW_8_P1;
 		P2OUT |= ROW_9_P2;
 	} else {
-		// some error
+		// some error...?
 		P2OUT &= ~ROW_0_P2;
 		P1OUT |= ROW_1_P1;
 		P2OUT &= ~ROW_2_P2;
